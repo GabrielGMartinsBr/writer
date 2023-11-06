@@ -1,12 +1,18 @@
-import { useRefSet3 } from '@src/hooks/useRefSet3';
 import { PropsWithChildren, createContext, useContext } from 'react';
+import { useRefSet3 } from '@src/hooks/useRefSet3';
 import { WriterElements } from './WriterElements';
+import { useImmer } from 'use-immer';
 
 function useWriterContextValue() {
     const elementRefs = useRefSet3(WriterElements);
+    const [isReady, setIsReady] = useImmer({
+        elements: false
+    });
 
     return {
-        elementRefs
+        elementRefs,
+        isReady,
+        setIsReady
     };
 }
 
