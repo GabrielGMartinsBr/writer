@@ -18,14 +18,6 @@ export class GenericListener {
         this.cbs.delete(cb);
     }
 
-    sign(cb: GenericListenerCb) {
-        this.add(cb);
-        const unSignCb = () => {
-            this.remove(cb);
-        };
-        return unSignCb;
-    }
-
     emit(...args: any) {
         if (!this.hasEntries) {
             return;
