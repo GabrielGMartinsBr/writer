@@ -1,7 +1,13 @@
-import { PropsWithChildren, createContext } from 'react';
+import { useRefSet3 } from '@src/hooks/useRefSet3';
+import { PropsWithChildren, createContext, useContext } from 'react';
+import { WriterElements } from './WriterElements';
 
 function useWriterContextValue() {
-    return {};
+    const elementRefs = useRefSet3(WriterElements);
+
+    return {
+        elementRefs
+    };
 }
 
 export type WriterContextValue = ReturnType<typeof useWriterContextValue>;
@@ -17,3 +23,11 @@ export const WriterProvider = (props: PropsWithChildren) => {
         </WriterContext.Provider>
     );
 };
+
+export function useWriterContext() {
+    const ctx = useContext(WriterContext);
+    if (!ctx) {
+        throw new Error('The provider for WriterContext was not found.')
+    }
+    return ctx;
+}
