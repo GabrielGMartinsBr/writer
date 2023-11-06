@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { GenericListener } from './utils/GenericListener';
 
 interface Constructable<T> {
     new(...args: any[]): T;
@@ -7,8 +8,10 @@ interface Constructable<T> {
 type ClassConstructor<T> = new (...args: any[]) => T;
 
 type IRefSet3<T> = T & {
+    changeListeners: GenericListener;
     get<K extends keyof T>(k: K): T[K];
     getter<K extends keyof T>(k: K): () => T[K];
+    set<K extends keyof T>(k: K, val: T[K]): void;
     setter<K extends keyof T>(k: K): (val: T[K]) => void;
 }
 
@@ -17,6 +20,7 @@ function createRefSet<T>(constructor: Constructable<T>) {
 
     class RefSet3<T> extends (constructor as Constructable<RefVal>) {
         private setterMap = new Map<keyof T, any>();
+        changeListeners = new GenericListener();
 
         constructor(...args: any[]) {
             super(...args);
@@ -34,13 +38,18 @@ function createRefSet<T>(constructor: Constructable<T>) {
             };
         }
 
+        set<K extends keyof T>(k: K, v: T[K]) {
+            this[k as any] = v;
+            this.changeListeners.emit();
+        }
+
         setter<K extends keyof T>(k: K) {
             let setter = this.setterMap.get(k);
             if (!setter) {
                 setter = (v: T[K]) => {
                     const desc = Object.getOwnPropertyDescriptor(this, k);
                     if (desc && desc.writable) {
-                        this[k as any] = v;
+                        this.set(k, v);
                     }
                 };
                 this.setterMap.set(k, setter);
