@@ -1,17 +1,17 @@
 /*
-/run/media/home/common/gabrielmartins.dev/dev/tools/gm-writer/src/pages/writer/view/WriterView.tsx:
+/run/media/home/common/gabrielmartins.dev/dev/tools/writer/src/pages/writer/view/WriterView.tsx:
 w-full max-w-screen-xl mx-auto my-0 bg-zinc-100
 
-/run/media/home/common/gabrielmartins.dev/dev/tools/gm-writer/src/pages/writer/view/text/WriterText.tsx:
+/run/media/home/common/gabrielmartins.dev/dev/tools/writer/src/pages/writer/view/text/WriterText.tsx:
 w-full p-9 bg-zinc-100
 relative w-full max-w-screen-md overflow-hidden mx-auto p-1 bg-zinc-500
 min-h-[600px] m-0 p-9 bg-white border border-solid border-zinc-300
 absolute -z-10 left-[-3px] top-[-3px] w-[1px] h-[1px] bg-transparent text-transparent border-none outline-none resize-none select-none overflow-hidden
 
-/run/media/home/common/gabrielmartins.dev/dev/tools/gm-writer/src/pages/writer/view/toolbar/WriterToolbar.tsx:
+/run/media/home/common/gabrielmartins.dev/dev/tools/writer/src/pages/writer/view/toolbar/WriterToolbar.tsx:
 bg-zinc-900/5 p-1
 
-/run/media/home/common/gabrielmartins.dev/dev/tools/gm-writer/src/pages/writer/view/toolbar/ToolbarButton.tsx:
+/run/media/home/common/gabrielmartins.dev/dev/tools/writer/src/pages/writer/view/toolbar/ToolbarButton.tsx:
 bg-transparent m-1 px-3 py-2 text-zinc-600 text-sm rounded-lg font-medium hover:bg-black/10 active:opacity-60
 
 
