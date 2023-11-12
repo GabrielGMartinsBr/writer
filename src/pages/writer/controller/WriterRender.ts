@@ -34,6 +34,11 @@ export class WriterRender {
         {
             content: ' Developer',
             style: defaultStyle
+        },
+        {
+            content: '\nVery long text trying to break the line'
+                + ', let\'s see if it is possible? Test 123...5...6...7...Fim',
+            style: defaultStyle
         }
     ];
 
@@ -89,7 +94,9 @@ export class WriterRender {
                     width = nextWidth;
                 } else {
                     add(node);
-                    x += width;
+                    x = 0;
+                    y += height;
+                    width = 0;
                     text = c;
                 }
             }
