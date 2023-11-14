@@ -56,14 +56,26 @@ export class WriterRender {
         const rule = this.createRuleElement(400);
         div.appendChild(rule);
 
-        const elements = this.parseElements(this.nodes, 400);
-        // console.log(elements.map(({ text, rect }) => ({ text, rect })));
-
-        for (const i of elements) {
-            const el = this.createElement(i.rect, i.node.style);
-            el.innerText = i.text;
-            div.appendChild(el);
+        let arr: number[] = [];
+        let s = 0, e = 0;
+        for (let i = 0; i < 999; i++) {
+            s = performance.now();
+            this.parseElements(this.nodes, 400);
+            e = performance.now();
+            arr.push(e - s);
         }
+        console.log('average time with cache', average(arr));
+
+        // const start = performance.now()
+        // const elements = this.parseElements(this.nodes, 400);
+        // const end = performance.now()
+        // console.log(end - start);
+
+        // for (const i of elements) {
+        //     const el = this.createElement(i.rect, i.node.style);
+        //     el.innerText = i.text;
+        //     div.appendChild(el);
+        // }
     }
 
     parseElements(nodes: TextNode[], rowWidth: number) {
@@ -207,3 +219,5 @@ class EUtils {
         return v + 'px';
     }
 }
+
+let average = a => a.reduce((p, c) => p + c, 0) / a.length

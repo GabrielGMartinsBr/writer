@@ -1,3 +1,5 @@
+import { MetricsCache } from './MetricsCache';
+
 const defaults = {
     fontName: 'Inter',
     fontSize: 16,
@@ -14,6 +16,7 @@ export class WriterMetrics {
         }
         return this.instance;
     }
+    cache = new MetricsCache();
 
     private ctx: CanvasRenderingContext2D;
     private ctxFontAttrs: FontAttrs;
@@ -43,10 +46,15 @@ export class WriterMetrics {
 
     // TODO: Add cache for the result
     measureChar(char: string) {
+        const cachedResult = this.cache.getCache(this.ctxFont, char);
+        if (cachedResult || cachedResult === 0) {
+            return cachedResult;
+        }
         const values = this.ctx.measureText(char[0]);
         if (!values) {
             throw new Error('Failed to get metrics.');
         }
+        this.cache.setCache(this.ctxFont, char, values.width);
         return values.width;
     }
 
