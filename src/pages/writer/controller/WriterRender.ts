@@ -14,6 +14,16 @@ const defaultStyle: NodeStyle = {
 
 };
 
+enum TextVertAlign {
+    TOP = 0.0,
+    TEXT_TOP = 0.25,
+    CENTER = 0.5,
+    TEXT_BOTTOM = 0.75,
+    BOTTOM = 1.0,
+}
+
+const leading = 1.25;
+
 
 
 export class WriterRender {
@@ -28,6 +38,7 @@ export class WriterRender {
             style: {
                 ...defaultStyle,
                 weight: 400,
+                fontSize: 32,
                 color: '#555'
             }
         },
@@ -56,66 +67,54 @@ export class WriterRender {
         const rule = this.createRuleElement(400);
         div.appendChild(rule);
 
-        let arr: number[] = [];
-        let s = 0, e = 0;
-        for (let i = 0; i < 999; i++) {
-            s = performance.now();
-            this.parseElements(this.nodes, 400);
-            e = performance.now();
-            arr.push(e - s);
+        const elements = this.parseElements(this.nodes, 400);
+        this.normalizeRowHeight(elements);
+
+        for (const i of elements) {
+            const el = this.createElement(i.rect, i.node.style);
+            el.innerText = i.text;
+            div.appendChild(el);
         }
-        console.log('average time with cache', average(arr));
-
-        // const start = performance.now()
-        // const elements = this.parseElements(this.nodes, 400);
-        // const end = performance.now()
-        // console.log(end - start);
-
-        // for (const i of elements) {
-        //     const el = this.createElement(i.rect, i.node.style);
-        //     el.innerText = i.text;
-        //     div.appendChild(el);
-        // }
     }
 
     parseElements(nodes: TextNode[], rowWidth: number) {
-        const leading = 1.5;
+        const metrics = WriterMetrics.getInstance();
+
         let x = 0;
-        let y = 0;
         let width = 0;
         let nextWidth = 0;
         let height = 0;
         let charWidth = 0;
+        let rowNum = 0;
 
         const arr: TextNodeElement[] = [];
 
-        const metrics = WriterMetrics.getInstance();
-
         let text = '';
-        let fontSize = 16;
 
         const add = (node: TextNode) => {
             arr.push({
                 text,
                 node,
+                rowNum,
                 rect: {
                     x,
-                    y,
+                    y: 0,
                     width,
-                    height
+                    height,
+                    rowHeight: 0
                 },
             });
         };
 
         for (const node of nodes) {
-            width = 0;
-            height = leading * fontSize;
-
             metrics.setStyle({
                 weight: node.style.weight,
                 fontName: node.style.fontName,
                 fontSize: node.style.fontSize,
             });
+
+            width = 0;
+            height = leading * node.style.fontSize;
 
             for (const c of node.content) {
                 if (c === '\n') {
@@ -123,7 +122,7 @@ export class WriterRender {
                         add(node);
                     }
                     x = 0;
-                    y += height;
+                    rowNum++;
                     text = '';
                     continue;
                 }
@@ -137,7 +136,7 @@ export class WriterRender {
                 } else {
                     add(node);
                     x = 0;
-                    y += height;
+                    rowNum++;
                     width = charWidth;
                     text = c;
                 }
@@ -151,13 +150,39 @@ export class WriterRender {
             }
         }
 
-        // console.log(arr);
         return arr;
+    }
+
+    private normalizeRowHeight(nodes: TextNodeElement[]) {
+        let rowNum = 0;
+        let height = 0;
+        let arr: TextNodeElement[] = [];
+        let y = 0;
+        for (let i = 0; i < nodes.length;) {
+            rowNum = nodes[i].rowNum;
+            height = 0;
+            arr = [];
+            while (nodes[i] && nodes[i].rowNum === rowNum) {
+                arr.push(nodes[i]);
+                if (nodes[i].rect.height > height) {
+                    height = nodes[i].rect.height;
+                }
+                i++;
+            }
+            for (const n of arr) {
+                let d = height - n.rect.height;
+                d = d * TextVertAlign.TEXT_BOTTOM;
+                n.rect.y = y + d;
+                n.rect.rowHeight = height;
+            }
+            y += height;
+        }
     }
 
     private createElement(rect: ElementRect, style: NodeStyle) {
         const margin = 16;
         const el = document.createElement('div');
+
         el.style.position = 'absolute';
         el.style.left = margin + rect.x + 'px';
         el.style.top = margin + rect.y + 'px';
@@ -171,6 +196,7 @@ export class WriterRender {
         el.style.backgroundColor = EUtils.randomColor();
         el.style.whiteSpace = 'nowrap';
         el.style.letterSpacing = '0';
+        el.style.lineHeight = leading.toString();
 
         return el;
     }
@@ -210,7 +236,7 @@ class EUtils {
             random(255, false),
             random(255, false),
             random(255, false),
-            .03
+            .1
         ];
         return `rgba(${c.join(', ')})`;
     }

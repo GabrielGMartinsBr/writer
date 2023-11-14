@@ -19,10 +19,12 @@ export interface ElementRect {
     y: number;
     width: number;
     height: number;
+    rowHeight: number;
 }
 
 export interface TextNodeElement {
     node: TextNode;
     rect: ElementRect;
     text: string;
+    rowNum: number;
 }
