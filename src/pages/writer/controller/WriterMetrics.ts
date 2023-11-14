@@ -16,20 +16,38 @@ export class WriterMetrics {
     }
 
     private ctx: CanvasRenderingContext2D;
+    private ctxFontAttrs: FontAttrs;
     private ctxFont: string;
 
     private constructor() {
         this.ctx = this.createCanvasContext();
+        this.ctxFontAttrs = { ...defaults };
         this.ctxFont = this.getDefaultCtxFont();
+        this.ctxFontAttrs = { ...defaults };
         this.ctx.font = this.ctxFont;
     }
 
-    setStyle(style: FontAttrs) {
-        const fontName = style.fontName || defaults.fontName;
-        const fontSize = style.fontSize || defaults.fontSize;
-        const weight = style.weight || defaults.weight;
+    setStyle(font: Partial<FontAttrs>) {
+        const current = this.ctxFontAttrs;
+        let { weight, fontName, fontSize } = font;
+
+        weight ||= current.weight || defaults.weight;
+        fontName ||= current.fontName || defaults.fontName;
+        fontSize ||= current.fontSize || defaults.fontSize;
+
+        this.ctxFontAttrs = { weight, fontName, fontSize };
         this.ctxFont = `${weight} ${fontSize}px ${fontName}`;
+
         this.ctx.font = this.ctxFont;
+    }
+
+    // TODO: Add cache for the result
+    measureChar(char: string) {
+        const values = this.ctx.measureText(char[0]);
+        if (!values) {
+            throw new Error('Failed to get metrics.');
+        }
+        return values.width;
     }
 
     measureText(text: string) {

@@ -24,6 +24,14 @@ export class WriterRender {
             style: defaultStyle
         },
         {
+            content: 'lala ...1...2...3...4...5',
+            style: {
+                ...defaultStyle,
+                weight: 400,
+                color: '#555'
+            }
+        },
+        {
             content: 'Role: ',
             style: {
                 ...defaultStyle,
@@ -41,6 +49,22 @@ export class WriterRender {
             style: defaultStyle
         }
     ];
+
+    render(div: HTMLDivElement) {
+        this.clearContent(div);
+
+        const rule = this.createRuleElement(400);
+        div.appendChild(rule);
+
+        const elements = this.parseElements(this.nodes, 400);
+        // console.log(elements.map(({ text, rect }) => ({ text, rect })));
+
+        for (const i of elements) {
+            const el = this.createElement(i.rect, i.node.style);
+            el.innerText = i.text;
+            div.appendChild(el);
+        }
+    }
 
     parseElements(nodes: TextNode[], rowWidth: number) {
         const leading = 1.5;
@@ -60,6 +84,7 @@ export class WriterRender {
 
         const add = (node: TextNode) => {
             arr.push({
+                text,
                 node,
                 rect: {
                     x,
@@ -67,24 +92,31 @@ export class WriterRender {
                     width,
                     height
                 },
-                text
             });
-            text = '';
         };
 
         for (const node of nodes) {
             width = 0;
             height = leading * fontSize;
 
+            metrics.setStyle({
+                weight: node.style.weight,
+                fontName: node.style.fontName,
+                fontSize: node.style.fontSize,
+            });
+
             for (const c of node.content) {
                 if (c === '\n') {
-                    add(node);
+                    if (text) {
+                        add(node);
+                    }
                     x = 0;
                     y += height;
+                    text = '';
                     continue;
                 }
 
-                charWidth = metrics.measureText(c)
+                charWidth = metrics.measureChar(c)
                 nextWidth = width + charWidth;
 
                 if (x + nextWidth < rowWidth) {
@@ -94,11 +126,13 @@ export class WriterRender {
                     add(node);
                     x = 0;
                     y += height;
-                    width = 0;
+                    width = charWidth;
                     text = c;
                 }
             }
             if (text) {
+                // Fix width due to varying spacing in specific letter combinations
+                width = metrics.measureText(text);
                 add(node);
                 x += width;
                 text = '';
@@ -109,20 +143,7 @@ export class WriterRender {
         return arr;
     }
 
-    render(div: HTMLDivElement) {
-        this.clearContent(div);
-
-        const elements = this.parseElements(this.nodes, 400);
-
-        // console.log(elements);
-        for (const i of elements) {
-            const el = this.createElement(i.rect);
-            el.innerText = i.text;
-            div.appendChild(el);
-        }
-    }
-
-    private createElement(rect: ElementRect) {
+    private createElement(rect: ElementRect, style: NodeStyle) {
         const margin = 16;
         const el = document.createElement('div');
         el.style.position = 'absolute';
@@ -130,11 +151,27 @@ export class WriterRender {
         el.style.top = margin + rect.y + 'px';
         el.style.width = rect.width + 'px';
         el.style.height = rect.height + 'px';
+
+        el.style.fontFamily = style.fontName;
+        el.style.fontWeight = style.weight.toString();
+        el.style.fontSize = style.fontSize + 'px';
+
         el.style.backgroundColor = EUtils.randomColor();
-        el.style.fontFamily = 'Inter';
-        el.style.fontWeight = '400';
-        el.style.fontSize = 16 + 'px';
         el.style.whiteSpace = 'nowrap';
+        el.style.letterSpacing = '0';
+
+        return el;
+    }
+
+    private createRuleElement(width: number) {
+        const margin = 16;
+        const el = document.createElement('div');
+        el.style.position = 'absolute';
+        el.style.left = margin + 'px';
+        el.style.top = 6 + 'px';
+        el.style.width = width + 'px';
+        el.style.backgroundColor = '#3333';
+        el.style.height = 9 + 'px';
         return el;
     }
 
@@ -161,7 +198,7 @@ class EUtils {
             random(255, false),
             random(255, false),
             random(255, false),
-            .5
+            .03
         ];
         return `rgba(${c.join(', ')})`;
     }
