@@ -22,8 +22,7 @@ enum TextVertAlign {
     BOTTOM = 1.0,
 }
 
-const leading = 1.25;
-
+const leading = 1.15;
 
 
 export class WriterRender {
@@ -43,7 +42,7 @@ export class WriterRender {
             }
         },
         {
-            content: 'Role: ',
+            content: ' Role: ',
             style: {
                 ...defaultStyle,
                 weight: 700,
@@ -114,7 +113,7 @@ export class WriterRender {
             });
 
             width = 0;
-            height = leading * node.style.fontSize;
+            height = node.style.fontSize;
 
             for (const c of node.content) {
                 if (c === '\n') {
@@ -169,13 +168,14 @@ export class WriterRender {
                 }
                 i++;
             }
+            const lineHeight = height * leading;
             for (const n of arr) {
-                let d = height - n.rect.height;
+                let d = lineHeight - n.rect.height;
                 d = d * TextVertAlign.TEXT_BOTTOM;
                 n.rect.y = y + d;
-                n.rect.rowHeight = height;
+                n.rect.rowHeight = lineHeight;
             }
-            y += height;
+            y += lineHeight;
         }
     }
 
@@ -196,7 +196,7 @@ export class WriterRender {
         el.style.backgroundColor = EUtils.randomColor();
         el.style.whiteSpace = 'nowrap';
         el.style.letterSpacing = '0';
-        el.style.lineHeight = leading.toString();
+        el.style.lineHeight = '1'
 
         return el;
     }
@@ -245,5 +245,3 @@ class EUtils {
         return v + 'px';
     }
 }
-
-let average = a => a.reduce((p, c) => p + c, 0) / a.length
