@@ -1,7 +1,6 @@
 import { random } from 'lodash';
-import { WriteMetrics } from './WriterMetrics';
+import { WriterMetrics } from './WriterMetrics';
 import { ElementRect, NodeStyle, TextNode, TextNodeElement } from './types';
-import { WriterMetricsSing } from './WriterMetricsSing';
 
 const defaultStyle: NodeStyle = {
     fontName: 'Inter',
@@ -43,10 +42,6 @@ export class WriterRender {
         }
     ];
 
-    constructor() {
-        WriteMetrics.init();
-    }
-
     parseElements(nodes: TextNode[], rowWidth: number) {
         const leading = 1.5;
         let x = 0;
@@ -58,12 +53,7 @@ export class WriterRender {
 
         const arr: TextNodeElement[] = [];
 
-        const metrics = WriterMetricsSing.getInstance();
-        // metrics.setStyle({
-        //     fontName: 'Inter',
-        //     fontSize: 16,
-        //     weight: 400
-        // });
+        const metrics = WriterMetrics.getInstance();
 
         let text = '';
         let fontSize = 16;
