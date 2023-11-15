@@ -36,9 +36,9 @@ export class WriterRender {
             content: 'lala ...1...2...3...4...5',
             style: {
                 ...defaultStyle,
-                weight: 400,
+                weight: 700,
                 fontSize: 32,
-                color: '#555'
+                color: '#39c'
             }
         },
         {
@@ -194,6 +194,7 @@ export class WriterRender {
         el.style.fontSize = style.fontSize + 'px';
 
         el.style.backgroundColor = EUtils.randomColor();
+        el.style.color = style.color;
         el.style.whiteSpace = 'nowrap';
         el.style.letterSpacing = '0';
         el.style.lineHeight = '1'
@@ -236,7 +237,7 @@ class EUtils {
             random(255, false),
             random(255, false),
             random(255, false),
-            .1
+            .06
         ];
         return `rgba(${c.join(', ')})`;
     }
