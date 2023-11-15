@@ -5,7 +5,9 @@ interface Props {
 
 export default function WriterText(props: Props) {
     const { } = props;
-    const { elementRefs } = useWriterContext();
+    const { elementRefs, state } = useWriterContext();
+
+    const focused = state.focused;
 
     return (
         <div tw={`{
@@ -16,22 +18,21 @@ export default function WriterText(props: Props) {
             <div tw={`{
                 relative
                 w-full max-w-screen-md
+                mx-auto
                 overflow-hidden
-                mx-auto p-1
-                bg-zinc-500
+                border-2 border-solid
+                ${focused ? 'border-zinc-400' : 'border-zinc-300'}
+                transition-colors
             }`}>
                 <div
                     ref={elementRefs.setter('content')}
                     tw={`{
+                        relative
                         min-h-[600px]
                         m-0 p-9
                         bg-white
-                        border border-solid
-                        border-zinc-300
                     }`}
-                >
-                    Text
-                </div>
+                />
 
                 <textarea
                     ref={elementRefs.setter('textArea')}
@@ -44,7 +45,7 @@ export default function WriterText(props: Props) {
                         resize-none select-none
                         overflow-hidden
                     }`}
-                    tabIndex={-1}
+                // tabIndex={-1}
                 />
             </div>
 

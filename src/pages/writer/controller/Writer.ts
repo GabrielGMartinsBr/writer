@@ -1,14 +1,27 @@
 import { RefSet3 } from '@src/hooks/useRefSet3';
+import {
+    BehaviorSubject,
+    Observable,
+    Subject,
+    debounce,
+    distinctUntilChanged,
+    fromEvent,
+    takeUntil,
+    timer
+} from 'rxjs';
 import { WriterElements } from '../context/WriterElements';
-import { Subject, fromEvent, takeUntil } from 'rxjs';
 import { WriterRender } from './WriterRender';
 
 export class Writer {
     private destroy$: Subject<void>;
+    private focus$: BehaviorSubject<boolean>;
+
     private textArea: HTMLTextAreaElement;
     private content: HTMLDivElement;
 
     private render = new WriterRender();
+
+    focusOutput: Observable<boolean>;
 
     constructor(
         refs: RefSet3<WriterElements>
@@ -20,6 +33,9 @@ export class Writer {
         }
 
         this.destroy$ = new Subject();
+        this.focus$ = new BehaviorSubject(false);
+
+        this.focusOutput = this.createFocusObservable();
 
         this.textArea = refs.textArea;
         this.content = refs.content;
@@ -45,6 +61,10 @@ export class Writer {
             .pipe(takeUntil(this.destroy$))
             .subscribe((e) => this.handleTextAreaFocus(e));
 
+        fromEvent<FocusEvent>(this.textArea, 'blur')
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((e) => this.handleTextAreaBlur(e));
+
         fromEvent<Event>(this.textArea, 'keydown')
             .pipe(takeUntil(this.destroy$))
             .subscribe((e) => this.handleTextAreaKeyDown(e));
@@ -54,11 +74,18 @@ export class Writer {
             .subscribe((e) => this.handleTextAreaChange(e));
     }
 
-    private handleContentClick(_: MouseEvent) {
+    private handleContentClick(e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
         this.textArea.focus();
     }
 
+    private handleTextAreaBlur(_: FocusEvent) {
+        this.focus$.next(false);
+    }
+
     private handleTextAreaFocus(_: FocusEvent) {
+        this.focus$.next(true);
     }
 
     private handleTextAreaKeyDown(_: Event) {
@@ -69,5 +96,13 @@ export class Writer {
 
     private handleTextAreaChange(_: Event) {
         // console.log('input', this.textArea.value);
+    }
+
+    private createFocusObservable() {
+        return this.focus$.pipe(
+            takeUntil(this.destroy$),
+            debounce(b => b ? timer(30) : timer(150)),
+            distinctUntilChanged()
+        );
     }
 }

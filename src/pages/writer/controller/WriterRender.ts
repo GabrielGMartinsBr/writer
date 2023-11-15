@@ -248,6 +248,8 @@ export class WriterRender {
         el.style.letterSpacing = '0';
         el.style.lineHeight = '1'
 
+        el.style.userSelect = 'none'
+
         return el;
     }
 
@@ -286,7 +288,7 @@ class EUtils {
             random(255, false),
             random(255, false),
             random(255, false),
-            .3
+            .06
         ];
         return `rgba(${c.join(', ')})`;
     }

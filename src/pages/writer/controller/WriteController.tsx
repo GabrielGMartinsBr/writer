@@ -6,7 +6,7 @@ interface Props { }
 
 export default function WriteController(props: Props) {
     const { } = props;
-    const { elementRefs, isReady, setIsReady } = useWriterContext();
+    const { elementRefs, isReady, setIsReady, setState } = useWriterContext();
 
     useEffect(() => {
         const checkRefs = () => setIsReady(d => {
@@ -27,6 +27,11 @@ export default function WriteController(props: Props) {
             return;
         }
         const w = new Writer(elementRefs);
+        w.focusOutput.subscribe(b => {
+            setState(d => {
+                d.focused = b;
+            });
+        });
         return () => {
             w.cleanup();
         }
