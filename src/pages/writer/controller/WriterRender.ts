@@ -33,7 +33,7 @@ export class WriterRender {
             style: defaultStyle
         },
         {
-            content: 'lala ...1...2...3...4...5',
+            content: 'lala 1...2...3...4...5',
             style: {
                 ...defaultStyle,
                 weight: 700,
@@ -54,7 +54,11 @@ export class WriterRender {
             style: defaultStyle
         },
         {
-            content: '\nVery long text trying to break the line'
+            content: 'aii bbb',
+            style: defaultStyle
+        },
+        {
+            content: 'Very long text trying to break the line'
                 + ', let\'s see if it is possible? Test 123...5...6...7...Fim',
             style: defaultStyle
         }
@@ -76,34 +80,56 @@ export class WriterRender {
         }
     }
 
-    parseElements(nodes: TextNode[], rowWidth: number) {
+    parseElements(nodes: TextNode[], containerWidth: number) {
+        if (!nodes.length) {
+            return [];
+        }
+
         const metrics = WriterMetrics.getInstance();
 
+        const breakWordRE = /^[ \t]$/;
+
         let x = 0;
-        let width = 0;
-        let nextWidth = 0;
         let height = 0;
         let charWidth = 0;
         let rowNum = 0;
 
-        const arr: TextNodeElement[] = [];
+        const elNodeArr: TextNodeElement[] = [];
 
-        let text = '';
+        let word = '';
+        let wordWidth = 0;
 
-        const add = (node: TextNode) => {
-            arr.push({
-                text,
+        let current = {
+            text: '',
+            x: 0,
+            width: 0,
+            height: 0
+        };
+
+
+        const pushCurrent = (node: TextNode) => {
+            elNodeArr.push({
+                text: current.text,
                 node,
                 rowNum,
                 rect: {
-                    x,
+                    x: current.x,
                     y: 0,
-                    width,
+                    width: current.width,
                     height,
                     rowHeight: 0
                 },
             });
         };
+
+        const resetCurrent = () => {
+            current = {
+                text: '',
+                x: 0,
+                width: 0,
+                height: 0
+            };
+        }
 
         for (const node of nodes) {
             metrics.setStyle({
@@ -112,44 +138,67 @@ export class WriterRender {
                 fontSize: node.style.fontSize,
             });
 
-            width = 0;
             height = node.style.fontSize;
 
             for (const c of node.content) {
                 if (c === '\n') {
-                    if (text) {
-                        add(node);
-                    }
-                    x = 0;
+                    current.text += word;
+                    current.width += wordWidth;
+                    word = '';
+                    wordWidth = 0;
+
+                    pushCurrent(node);
+                    resetCurrent();
+
                     rowNum++;
-                    text = '';
+                    x = 0;
                     continue;
                 }
 
                 charWidth = metrics.measureChar(c)
-                nextWidth = width + charWidth;
 
-                if (x + nextWidth < rowWidth) {
-                    text += c;
-                    width = nextWidth;
-                } else {
-                    add(node);
-                    x = 0;
+                word += c;
+                wordWidth += charWidth;
+
+
+
+                if (x + current.width + wordWidth >= containerWidth) {
+                    pushCurrent(node);
+                    resetCurrent();
+
+                    x = current.width;
                     rowNum++;
-                    width = charWidth;
-                    text = c;
+                }
+
+                if (breakWordRE.test(c)) {
+                    current.text += word;
+                    current.width += wordWidth;
+
+                    word = '';
+                    wordWidth = 0;
+                    continue;
                 }
             }
-            if (text) {
+
+            if (word) {
+                current.text += word;
+                current.width += wordWidth;
+                word = '';
+                wordWidth = 0;
+            }
+            if (current.text) {
                 // Fix width due to varying spacing in specific letter combinations
-                width = metrics.measureText(text);
-                add(node);
-                x += width;
-                text = '';
+                current.width = metrics.measureText(current.text);
+
+                x += current.width;
+
+                pushCurrent(node);
+                resetCurrent();
+                current.x = x;
             }
         }
 
-        return arr;
+        return elNodeArr;
     }
 
     private normalizeRowHeight(nodes: TextNodeElement[]) {
@@ -195,7 +244,7 @@ export class WriterRender {
 
         el.style.backgroundColor = EUtils.randomColor();
         el.style.color = style.color;
-        el.style.whiteSpace = 'nowrap';
+        el.style.whiteSpace = 'pre';
         el.style.letterSpacing = '0';
         el.style.lineHeight = '1'
 
@@ -237,7 +286,7 @@ class EUtils {
             random(255, false),
             random(255, false),
             random(255, false),
-            .06
+            .3
         ];
         return `rgba(${c.join(', ')})`;
     }
