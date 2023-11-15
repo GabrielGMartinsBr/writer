@@ -21,8 +21,8 @@ export default function WriterText(props: Props) {
                 mx-auto
                 overflow-hidden
                 border-2 border-solid
-                ${focused ? 'border-zinc-400' : 'border-zinc-300'}
-                transition-colors
+                ${focused ? 'border-zinc-500' : 'border-zinc-300'}
+                transition-colors ease-out duration-75
             }`}>
                 <div
                     ref={elementRefs.setter('content')}

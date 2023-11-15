@@ -18,11 +18,11 @@ export default function ToolbarButton(props: PropsWithChildren<Props>) {
             tw={`{
                 bg-transparent
                 m-1 px-3 py-2
-                // border border-solid
-                // border-zinc-600
                 text-zinc-600 
                 text-sm rounded-lg
                 font-medium
+
+                transition-colors
                 
                 hover:{
                     bg-black/10
